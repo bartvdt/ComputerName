@@ -1,7 +1,9 @@
 package computername;
 
-import computername.LinuxName;
-import computername.MacOSName;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Scanner;
+
 import computername.WindowsName;
 
 public class ComputerName {
@@ -20,7 +22,6 @@ public static void main(String[] args) {
 
 	System.out.println("os: " + os);
 	
-	String computerName = "";
 	
 	if (os.indexOf("mac") >= 0)
 		os = "MacOS";
@@ -31,12 +32,35 @@ public static void main(String[] args) {
 	else
 		os = "Unknown";
 	
+	String command;
+	String computerName = "";
+	
 	switch (os) {
-	case "MacOS":	MacOSName mn = new MacOSName();
-					computerName = mn.getComputerName();
+	case "MacOS":	{
+						command = "/usr/sbin/scutil --get ComputerName";
+						try {
+							Process proc = Runtime.getRuntime().exec(command);
+							InputStream stream = proc.getInputStream();
+							Scanner s = new Scanner(stream).useDelimiter("\\A");
+							computerName = s.hasNext() ? s.next() : "";
+				        }
+						catch(IOException e) {
+							System.out.println("Unable to execute: " + command );
+					    }			
+					}
 					break;
-	case "Linux": 	LinuxName ln = new LinuxName(); 
-					computerName = ln.getComputerName();
+	case "Linux": 	{
+						command = "cat /etc/hostname";
+						try {
+							Process proc = Runtime.getRuntime().exec(command);
+							InputStream stream = proc.getInputStream();
+							Scanner s = new Scanner(stream).useDelimiter("\\A");
+							computerName = s.hasNext() ? s.next() : "";
+				        }
+						catch(IOException e) {
+							System.out.println("Unable to execute: " + command );
+					    }		
+					}
 					break;
 	case "Windows": WindowsName wn = new WindowsName();
 					computerName = wn.getComputerName();
