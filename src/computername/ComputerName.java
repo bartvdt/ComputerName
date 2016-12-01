@@ -4,6 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Scanner;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+
 public class ComputerName {
 
 public static void main(String[] args) {
@@ -40,7 +46,7 @@ public static void main(String[] args) {
 							Process proc = Runtime.getRuntime().exec(command);
 							InputStream stream = proc.getInputStream();
 							Scanner s = new Scanner(stream).useDelimiter("\\A");
-							computerName = s.hasNext() ? s.next() : "";
+							computerName = (s.hasNext() ? s.next() : "").replaceAll("\n","" );
 				        }
 						catch(IOException e) {
 							System.out.println("Unable to execute: " + command );
@@ -53,7 +59,7 @@ public static void main(String[] args) {
 							Process proc = Runtime.getRuntime().exec(command);
 							InputStream stream = proc.getInputStream();
 							Scanner s = new Scanner(stream).useDelimiter("\\A");
-							computerName = s.hasNext() ? s.next() : "";
+							computerName = (s.hasNext() ? s.next() : "").replaceAll("\n","" );
 				        }
 						catch(IOException e) {
 							System.out.println("Unable to execute: " + command );
@@ -66,7 +72,35 @@ public static void main(String[] args) {
 	default:		computerName = "Unknown";
 	}
 	
-	System.out.println("computername: " + computerName);
+	System.out.println("computerName: " + computerName);
+	
+	String computerIP = "";
+	
+	try {
+		Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
+	    while( ifaces.hasMoreElements() )
+	    {
+	      NetworkInterface iface = ifaces.nextElement();
+	      Enumeration<InetAddress> addresses = iface.getInetAddresses();
+	
+	      while( addresses.hasMoreElements() )
+	      {
+	        InetAddress addr = addresses.nextElement();
+	        System.out.println("Address: " + addr.toString());
+	        if( addr instanceof Inet4Address && !addr.isLoopbackAddress() )
+	        {
+	        	computerIP = addr.toString();
+	        }
+	      }
+	    }
+	} 
+	catch(SocketException e)
+	{
+		System.out.println(e.getMessage());
+	}
+	
+	System.out.println("computerIP: " + computerIP.substring(computerIP.indexOf('/')+1));
+
 }
 
 }
